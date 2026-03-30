@@ -14,7 +14,10 @@ export default function BetTypeSelector({ betType, onChange, visibleIds, disable
   const buttons = visibleIds?.length
     ? BET_TYPE_BTNS.filter((b) => visibleIds.includes(b.id))
     : BET_TYPE_BTNS;
-  const getBetTypeLabel = (id: BetTypeId) => (t[`betType${id}` as keyof typeof t] as string | undefined) ?? id;
+  const getBetTypeLabel = (id: BetTypeId) => {
+    const key = `betType${id.charAt(0).toUpperCase()}${id.slice(1)}` as keyof typeof t;
+    return (t[key] as string | undefined) ?? id;
+  };
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-card border border-ap-border p-4">

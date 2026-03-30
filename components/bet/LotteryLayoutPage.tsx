@@ -43,15 +43,22 @@ export default function LotteryLayoutPage({
   const [betType,   setBetType]   = useState<BetTypeId>("3top");
   const [isClassic, setIsClassic] = useState(false);
   const availableBetTypeIds = betRates.map((r) => r.id);
+  // เพิ่ม run/winlay อัตโนมัติถ้า API ไม่ส่งมา แต่มี 2top อยู่
+  const enrichedIds: BetTypeId[] = [...availableBetTypeIds];
+  if (availableBetTypeIds.includes("2top")) {
+    if (!enrichedIds.includes("run"))    enrichedIds.push("run");
+    if (!enrichedIds.includes("winlay")) enrichedIds.push("winlay");
+  }
   const specialTypes: BetTypeId[] = ["6perm", "19door", "winnum"];
-  const selectorTypeIds = availableBetTypeIds.length
-    ? availableBetTypeIds.filter((id) => !specialTypes.includes(id))
+  const selectorTypeIds = enrichedIds.length
+    ? enrichedIds.filter((id) => !specialTypes.includes(id))
     : BET_TYPE_BTNS.map((b) => b.id).filter((id) => !specialTypes.includes(id));
 
   useEffect(() => {
     if (!availableBetTypeIds.length) return;
-    if (!availableBetTypeIds.includes(betType)) {
-      setBetType(availableBetTypeIds[0]);
+    if (specialTypes.includes(betType)) return; // special types ไม่ต้อง reset
+    if (!enrichedIds.includes(betType)) {
+      setBetType(enrichedIds[0] ?? availableBetTypeIds[0]);
     }
   }, [availableBetTypeIds, betType]);
 

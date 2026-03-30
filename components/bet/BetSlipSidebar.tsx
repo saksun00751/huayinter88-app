@@ -46,7 +46,10 @@ export default function BetSlipSidebar({
   const t = useTranslation("bet");
   const localeByLang: Record<string, string> = { th: "th-TH", en: "en-US", kh: "km-KH", la: "lo-LA" };
   const numberLocale = localeByLang[lang] ?? "th-TH";
-  const getBetTypeLabel = (id: BetTypeId) => (t[`betType${id}` as keyof typeof t] as string) ?? betTypeLabel(id);
+  const getBetTypeLabel = (id: BetTypeId) => {
+    const key = `betType${id.charAt(0).toUpperCase()}${id.slice(1)}` as keyof typeof t;
+    return (t[key] as string | undefined) ?? betTypeLabel(id);
+  };
   const [showModal,  setShowModal]  = useState(false);
   const [closedToast, setClosedToast] = useState(false);
 

@@ -152,9 +152,12 @@ export default function BetQuickForm({
     { id: "19door", label: t.betType19door },
     { id: "winnum", label: t.betTypeWinnum },
   ];
-  const visibleSpecialModes = availableBetTypeIds.length
-    ? specialModes.filter((mode) => availableBetTypeIds.includes(mode.id))
-    : specialModes;
+  const visibleSpecialModes = specialModes.filter((mode) => {
+    if (!availableBetTypeIds.length) return true;
+    if (mode.id === "6perm") return availableBetTypeIds.includes("3top");
+    // 19door, winnum ใช้ฐาน 2top
+    return availableBetTypeIds.includes("2top");
+  });
 
   const canAddBill = preview.length > 0 && (parseFloat(topAmt) > 0 || parseFloat(botAmt) > 0);
 
