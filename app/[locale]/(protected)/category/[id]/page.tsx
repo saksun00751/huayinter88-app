@@ -1,5 +1,6 @@
 import CountdownTimer from "@/components/ui/CountdownTimer";
 import PackageModalButton from "@/components/bet/PackageModalButton";
+import BetToastNotice from "@/components/bet/BetToastNotice";
 import BackButton from "@/components/ui/BackButton";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/session/auth";
@@ -158,6 +159,7 @@ export default async function CategoryPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-ap-bg pb-20 sm:pb-8">
+      <BetToastNotice />
       <div className="max-w-5xl mx-auto px-5 pt-6">
 
         {/* Back + header */}

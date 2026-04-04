@@ -349,10 +349,17 @@ export default async function BetRoute({ params, searchParams }: Props) {
       ),
     ];
 
-    // ถ้า selected: false → redirect กลับพร้อม toast
-    if (selectedPkgRes && selectedPkgRes.success && !selectedPkgRes.selected) {
+    // ต้องมี package ที่เลือกแล้วเท่านั้น ถึงจะเข้าหน้าแทงได้
+    const hasSelectedPackage =
+      selectedPkgRes?.success === true &&
+      selectedPkgRes?.selected === true &&
+      Number.isFinite(selectedPkgRes?.data?.package_id);
+    if (!hasSelectedPackage) {
       const toastMsg = encodeURIComponent(t.noPackageToast ?? "กรุณาเลือก Package ก่อนแทงหวย");
-      redirect(`/${locale}/bet?toast=${toastMsg}`);
+      const backTo = categoryItem?.code
+        ? `/${locale}/category/${categoryItem.code}`
+        : `/${locale}/bet`;
+      redirect(`${backTo}?toast=${toastMsg}`);
     }
 
     const finalDrawId = Number.isFinite(drawIdFromQuery)
