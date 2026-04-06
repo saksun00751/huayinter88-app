@@ -49,7 +49,7 @@ export default function BetLeftSidebar({ lotteryName, numberLimits, selectedPack
     { id: "2top" as LeftTab, label: t.leftTab2 },
     { id: "run" as LeftTab, label: t.leftTabRun },
   ];
-  const [leftTab, setLeftTab] = useState<LeftTab>("2top");
+  const [leftTab, setLeftTab] = useState<LeftTab>("3top");
 
   // unique numbers visible in current tab (closed or limited)
   const [col1, col2] = TAB_BET_TYPES[leftTab];

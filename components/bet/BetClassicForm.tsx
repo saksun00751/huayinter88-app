@@ -179,6 +179,28 @@ export default function BetClassicForm({ lotteryFlag, lotteryLogo, bills, number
 
   const handleSubmit = useCallback(() => {
     if (!canSubmit) return;
+
+    // validate min/max ทุก cell ที่กรอกค่า
+    for (const row of rows) {
+      const is2 = row.digits === 2;
+      const checks: Array<{ val: string; ctx: typeof ctx3top; label: string }> = is2
+        ? [
+            { val: row.top, ctx: ctx2top, label: t.top ?? "บน" },
+            { val: row.bot, ctx: ctx2bot, label: t.bottom ?? "ล่าง" },
+          ]
+        : [
+            { val: row.top, ctx: ctx3top, label: t.top ?? "บน" },
+            { val: row.tod, ctx: ctx3tod, label: t.tod ?? "โต๊ด" },
+          ];
+      for (const { val, ctx, label } of checks) {
+        const err = validateCell(val, ctx);
+        if (err) {
+          showToast(`${t.numberLabel} ${row.number} (${label}): ${err}`);
+          return;
+        }
+      }
+    }
+
     const slipNo = genSlipNo();
     const time   = new Date().toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
     const newBills: BillRow[] = [];
@@ -206,7 +228,8 @@ export default function BetClassicForm({ lotteryFlag, lotteryLogo, bills, number
 
     onAddBills(newBills);
     clearAll();
-  }, [canSubmit, rows, bills, note, onAddBills, dateLocale, t.numberLabel, t.blockedNumberShort, t.duplicateSlipMessage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSubmit, rows, bills, note, onAddBills, dateLocale, ctx2top, ctx2bot, ctx3top, ctx3tod, t]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   const inputCls = "w-full text-center text-[13px] font-bold text-ap-primary outline-none bg-transparent tabular-nums py-1.5 focus:bg-ap-blue/5 transition-colors";

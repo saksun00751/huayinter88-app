@@ -3,53 +3,68 @@ import { getApiToken, getLangCookie } from "@/lib/session/cookies";
 
 export interface TxRow {
   id: number;
-  label: string;
+  title: string;
+  detail: string;
+  typeLabel: string;
+  direction: "CREDIT" | "DEBIT";
+  signedAmount: number;
   amount: number;
-  amountRaw: number;
   balanceBefore: number;
   balanceAfter: number;
   date: string;
-  status: "สำเร็จ" | "รอดำเนินการ" | "ยกเลิก";
+  status: "SUCCESS" | "PENDING" | "CANCELLED" | "FAILED";
 }
 
-type TxStatus = TxRow["status"];
+export interface TxSummary {
+  count: number;
+  totalCredit: number;
+  totalDebit: number;
+  netAmount: number;
+}
 
-interface HistoryApiItem {
+export interface TxPagination {
+  page: number;
+  limit: number;
+  count: number;
+  total: number;
+  hasMore: boolean;
+}
+
+interface WalletTxItem {
   id?: number | string;
-  code?: number | string;
+  created_at?: string;
   type?: string;
-  title?: string;
-  label?: string;
-  detail?: string;
-  note?: string;
-  method?: string;
-  status_display?: string;
-  date_create?: string;
+  type_label?: string;
+  direction?: string;
+  direction_label?: string;
   amount?: number | string;
-  credit?: number | string;
-  debit?: number | string;
+  signed_amount?: number | string;
   balance_before?: number | string;
   balance_after?: number | string;
-  status?: string | number;
-  status_label?: string;
-  created_at?: string;
-  date?: string;
+  status?: string;
+  title?: string;
+  detail?: string;
 }
 
-interface HistoryApiResponse {
+interface WalletTxResponse {
   success?: boolean;
-  items?: HistoryApiItem[];
-  data?:
-    | HistoryApiItem[]
-    | HistoryApiItem
-    | {
-        items?: HistoryApiItem[];
-        list?: HistoryApiItem[];
-        rows?: HistoryApiItem[];
-        history?: HistoryApiItem[];
-      }
-    | null;
   message?: string;
+  data?: {
+    items?: WalletTxItem[];
+    summary?: {
+      count?: number;
+      total_credit_amount?: number;
+      total_debit_amount?: number;
+      net_amount?: number;
+    };
+    pagination?: {
+      page?: number;
+      limit?: number;
+      count?: number;
+      total?: number;
+      has_more?: boolean;
+    };
+  };
 }
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -61,68 +76,87 @@ function toNumber(value: unknown, fallback = 0): number {
   return fallback;
 }
 
-function mapStatus(status: unknown, statusLabel?: string): TxStatus {
-  const raw = String(statusLabel ?? status ?? "").toLowerCase();
-  if (raw.includes("สำเร็จ") || raw.includes("success") || raw.includes("completed") || raw === "1") return "สำเร็จ";
-  if (raw.includes("รอดำเนินการ") || raw.includes("pending") || raw.includes("wait") || raw === "0") return "รอดำเนินการ";
-  return "ยกเลิก";
+function mapStatus(raw: unknown): TxRow["status"] {
+  const s = String(raw ?? "").toUpperCase();
+  if (s === "SUCCESS" || s === "COMPLETED" || s === "1") return "SUCCESS";
+  if (s === "PENDING" || s === "WAIT" || s === "0")      return "PENDING";
+  if (s === "FAILED")                                    return "FAILED";
+  return "CANCELLED";
 }
 
-function mapHistoryItem(row: HistoryApiItem, idx: number, type: string): TxRow {
-  const credit = toNumber(row.credit, 0);
-  const debit = toNumber(row.debit, 0);
-  const rawAmount = row.amount !== undefined
-    ? toNumber(row.amount, 0)
-    : (credit > 0 ? credit : debit > 0 ? -debit : 0);
-
-  const date = String(row.created_at ?? row.date_create ?? row.date ?? "");
-  const label = String(
-    row.status_display ?? row.title ?? row.label ?? row.method ?? row.detail ?? row.note ?? type
-  );
+function mapItem(row: WalletTxItem, idx: number): TxRow {
+  const direction = String(row.direction ?? "").toUpperCase() === "CREDIT" ? "CREDIT" : "DEBIT";
+  const amount     = toNumber(row.amount, 0);
+  const signed     = toNumber(row.signed_amount, direction === "CREDIT" ? amount : -amount);
   return {
-    id: toNumber(row.code ?? row.id, idx + 1),
-    label,
-    amount: Math.abs(rawAmount),
-    amountRaw: rawAmount,
+    id:           toNumber(row.id, idx + 1),
+    title:        String(row.title ?? row.type_label ?? row.type ?? ""),
+    detail:       String(row.detail ?? ""),
+    typeLabel:    String(row.type_label ?? row.type ?? ""),
+    direction,
+    signedAmount: signed,
+    amount:       Math.abs(amount),
     balanceBefore: toNumber(row.balance_before, 0),
-    balanceAfter: toNumber(row.balance_after, 0),
-    date,
-    status: mapStatus(row.status, row.status_label),
+    balanceAfter:  toNumber(row.balance_after, 0),
+    date:         String(row.created_at ?? ""),
+    status:       mapStatus(row.status),
   };
+}
+
+export interface TransactionsResult {
+  rows:       TxRow[];
+  summary:    TxSummary;
+  pagination: TxPagination;
 }
 
 interface TxFilter {
   dateStart?: string;
   dateStop?: string;
+  page?: number;
 }
 
-function extractHistoryItems(data: HistoryApiResponse["data"]): HistoryApiItem[] {
-  if (!data) return [];
-  if (Array.isArray(data)) return data;
-  if ("items" in data && Array.isArray(data.items)) return data.items;
-  if ("list" in data && Array.isArray(data.list)) return data.list;
-  if ("rows" in data && Array.isArray(data.rows)) return data.rows;
-  if ("history" in data && Array.isArray(data.history)) return data.history;
-  return [data as HistoryApiItem];
-}
+export async function getTransactionsByTab(
+  _userId: string,
+  tabId: string,
+  filter?: TxFilter
+): Promise<TransactionsResult> {
+  const empty: TransactionsResult = {
+    rows: [],
+    summary: { count: 0, totalCredit: 0, totalDebit: 0, netAmount: 0 },
+    pagination: { page: 1, limit: 20, count: 0, total: 0, hasMore: false },
+  };
 
-export async function getTransactionsByTab(_userId: string, tabId: string, filter?: TxFilter): Promise<TxRow[]> {
   const [token, lang] = await Promise.all([getApiToken(), getLangCookie()]);
-  if (!token) return [];
+  if (!token) return empty;
 
-  const qs = new URLSearchParams();
+  const qs = new URLSearchParams({ type: tabId });
   if (filter?.dateStart) qs.set("date_start", filter.dateStart);
-  if (filter?.dateStop) qs.set("date_stop", filter.dateStop);
-  const query = qs.toString();
-  const path = `/member/history/${encodeURIComponent(tabId)}${query ? `?${query}` : ""}`;
+  if (filter?.dateStop)  qs.set("date_stop", filter.dateStop);
+  if (filter?.page && filter.page > 1) qs.set("page", String(filter.page));
 
   try {
-    const res = await apiGet<HistoryApiResponse>(path, token, lang);
-    const rows = (Array.isArray(res?.items) && res.items.length > 0)
-      ? res.items
-      : extractHistoryItems(res?.data);
-    return rows.map((r, i) => mapHistoryItem(r, i, tabId));
+    const res = await apiGet<WalletTxResponse>(`/wallet/transactions?${qs.toString()}`, token, lang);
+    const d   = res?.data;
+    const items = Array.isArray(d?.items) ? d.items : [];
+    const s   = d?.summary;
+    const p   = d?.pagination;
+    return {
+      rows: items.map((r, i) => mapItem(r, i)),
+      summary: {
+        count:       toNumber(s?.count, 0),
+        totalCredit: toNumber(s?.total_credit_amount, 0),
+        totalDebit:  toNumber(s?.total_debit_amount, 0),
+        netAmount:   toNumber(s?.net_amount, 0),
+      },
+      pagination: {
+        page:    toNumber(p?.page, 1),
+        limit:   toNumber(p?.limit, 20),
+        count:   toNumber(p?.count, 0),
+        total:   toNumber(p?.total, 0),
+        hasMore: Boolean(p?.has_more),
+      },
+    };
   } catch {
-    return [];
+    return empty;
   }
 }

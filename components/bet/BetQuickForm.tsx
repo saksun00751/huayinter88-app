@@ -69,15 +69,37 @@ export default function BetQuickForm({
   const today = new Date().toLocaleDateString(dateLocale, { day: "2-digit", month: "2-digit", year: "numeric" });
 
   const maxDigits = MAX_DIGITS[betType];
-  const bottomAmountLabel = maxDigits === 3 ? t.tod : t.bottom;
 
-  const topCtx = bettingContext?.[betType];
-  const botCtx = bettingContext?.[BOT_BET_TYPE[betType] ?? betType];
+  // 3top/3tod → เปิดทั้ง บน(3top) และ โต๊ด(3tod) พร้อมกัน
+  // 2top/2bot → เปิดทั้ง บน(2top) และ ล่าง(2bot) พร้อมกัน
+  const is3DigitPair = betType === "3top" || betType === "3tod";
+  const is2DigitPair = betType === "2top" || betType === "2bot";
+  const isRunPair    = betType === "run"  || betType === "winlay";
+
+  const topBillType: BetTypeId = is3DigitPair ? "3top" : is2DigitPair ? "2top" : isRunPair ? "run"    : betType;
+  const botBillType: BetTypeId = is3DigitPair ? "3tod" : is2DigitPair ? "2bot" : isRunPair ? "winlay" : (BOT_BET_TYPE[betType] ?? betType);
+
+  const topCtx = is3DigitPair
+    ? bettingContext?.["3top"]
+    : is2DigitPair
+    ? bettingContext?.["2top"]
+    : isRunPair
+    ? bettingContext?.["run"]
+    : bettingContext?.[betType];
+  const botCtx = is3DigitPair
+    ? bettingContext?.["3tod"]
+    : is2DigitPair
+    ? bettingContext?.["2bot"]
+    : isRunPair
+    ? bettingContext?.["winlay"]
+    : bettingContext?.[BOT_BET_TYPE[betType] ?? betType];
 
   const TOP_TYPES: BetTypeId[] = ["3top", "6perm", "2top", "19door", "winnum", "run"];
   const BOT_TYPES: BetTypeId[] = ["6perm", "3tod", "19door", "winnum", "2bot", "winlay"];
-  const showTop = TOP_TYPES.includes(betType);
-  const showBot = BOT_TYPES.includes(betType);
+  const showTop = is3DigitPair || is2DigitPair || isRunPair || TOP_TYPES.includes(betType);
+  const showBot = is3DigitPair || is2DigitPair || isRunPair || BOT_TYPES.includes(betType);
+
+  const bottomAmountLabel = (is3DigitPair || maxDigits === 3) ? t.tod : t.bottom;
 
   type Ctx = typeof topCtx;
   const validateAmount = (amt: number, ctx: Ctx): string | null => {
@@ -209,7 +231,7 @@ export default function BetQuickForm({
       if (err) { setToastMsg({ text: err, type: "warning" }); return; }
       if (topCtx?.maxPerNumber) {
         const overLimit = preview.find((num) => {
-          const existing = bills.filter((b) => b.number === num && b.betType === betType).reduce((s, b) => s + b.top, 0);
+          const existing = bills.filter((b) => b.number === num && b.betType === topBillType).reduce((s, b) => s + b.top, 0);
           return existing + top > topCtx.maxPerNumber;
         });
         if (overLimit) { setToastMsg({ text: `${t.numberLabel} ${overLimit}: ${t.amountPerNumberExceeded.replace("{max}", String(topCtx.maxPerNumber))}`, type: "warning" }); return; }
@@ -218,34 +240,45 @@ export default function BetQuickForm({
     if (bot > 0) {
       const err = validateAmount(bot, botCtx);
       if (err) { setToastMsg({ text: err, type: "warning" }); return; }
-      const botBetType = BOT_BET_TYPE[betType] ?? betType;
       if (botCtx?.maxPerNumber) {
         const overLimit = preview.find((num) => {
-          const existing = bills.filter((b) => b.number === num && b.betType === botBetType).reduce((s, b) => s + b.bot + b.top, 0);
+          const existing = bills.filter((b) => b.number === num && b.betType === botBillType).reduce((s, b) => s + b.bot + b.top, 0);
           return existing + bot > botCtx.maxPerNumber;
         });
         if (overLimit) { setToastMsg({ text: `${t.numberLabel} ${overLimit}: ${t.amountPerNumberExceeded.replace("{max}", String(botCtx.maxPerNumber))}`, type: "warning" }); return; }
       }
     }
 
-    // เช็ค duplicate: number + betType + บน/ล่าง ห้ามซ้ำกับที่มีในโพยแล้ว
-    const dupes = preview.filter((num) =>
-      bills.some((b) =>
-        b.number === num && b.betType === betType &&
-        ((top > 0 && b.top > 0) || (bot > 0 && b.bot > 0))
-      )
-    );
-    if (dupes.length > 0) {
-      setToastMsg({ text: `${t.numberLabel} ${dupes.join(", ")} ${t.duplicateSlipMessage}`, type: "warning" });
-      return;
+    // เช็ค duplicate แยกตาม betType ของ top และ bot
+    if (top > 0) {
+      const dupes = preview.filter((num) =>
+        bills.some((b) => b.number === num && b.betType === topBillType && b.top > 0)
+      );
+      if (dupes.length > 0) {
+        setToastMsg({ text: `${t.numberLabel} ${dupes.join(", ")} ${t.duplicateSlipMessage}`, type: "warning" });
+        return;
+      }
+    }
+    if (bot > 0) {
+      const dupes = preview.filter((num) =>
+        bills.some((b) => b.number === num && b.betType === botBillType && b.top > 0)
+      );
+      if (dupes.length > 0) {
+        setToastMsg({ text: `${t.numberLabel} ${dupes.join(", ")} ${t.duplicateSlipMessage}`, type: "warning" });
+        return;
+      }
     }
 
     const slipNo = genSlipNo();
     const time   = new Date().toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit" });
-    const rows: BillRow[] = preview.map((num) => ({ id: genId(), slipNo, number: num, betType, top, bot, note, time }));
-    onAddBills(rows);
+    const newBills: BillRow[] = [];
+    preview.forEach((num) => {
+      if (top > 0) newBills.push({ id: genId(), slipNo, number: num, betType: topBillType, top, bot: 0, note, time });
+      if (bot > 0) newBills.push({ id: genId(), slipNo, number: num, betType: botBillType, top: bot, bot: 0, note, time });
+    });
+    onAddBills(newBills);
     clearPreview();
-  }, [canAddBill, topAmt, botAmt, preview, betType, bills, note, clearPreview, onAddBills, dateLocale, topCtx, botCtx, validateAmount, showTop, showBot]);
+  }, [canAddBill, topAmt, botAmt, preview, topBillType, botBillType, bills, note, clearPreview, onAddBills, dateLocale, topCtx, botCtx, validateAmount, showTop, showBot, t]);
 
   return (
     <>

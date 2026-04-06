@@ -165,33 +165,6 @@ export default function ReferralPage({
         </div>
       </div>
 
-      {/* Rule */}
-      {rule && (
-        <div className="bg-white rounded-2xl border border-ap-border shadow-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-ap-border">
-            <p className="text-[12px] font-semibold text-ap-tertiary uppercase tracking-wide">{t.ruleTitle}</p>
-          </div>
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="rounded-xl border border-ap-border bg-ap-bg/40 p-3">
-              <p className="text-[11px] text-ap-tertiary">Promotion ID</p>
-              <p className="text-[13px] font-bold text-ap-primary mt-0.5">{rule.promotion_id || "-"}</p>
-            </div>
-            <div className="rounded-xl border border-ap-border bg-ap-bg/40 p-3">
-              <p className="text-[11px] text-ap-tertiary">Type</p>
-              <p className="text-[13px] font-bold text-ap-primary mt-0.5">{rule.length_type || "-"}</p>
-            </div>
-            <div className="rounded-xl border border-ap-border bg-ap-bg/40 p-3">
-              <p className="text-[11px] text-ap-tertiary">Bonus Percent</p>
-              <p className="text-[13px] font-bold text-ap-primary mt-0.5">{Number(rule.bonus_percent ?? 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}%</p>
-            </div>
-            <div className="rounded-xl border border-ap-border bg-ap-bg/40 p-3">
-              <p className="text-[11px] text-ap-tertiary">Bonus Value</p>
-              <p className="text-[13px] font-bold text-ap-primary mt-0.5">{ruleValue ?? "-"}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Referral code + link */}
       <div className="bg-white rounded-2xl border border-ap-border shadow-card p-5 space-y-4">
         <p className="text-[12px] font-semibold text-ap-tertiary uppercase tracking-wide">{t.codeTitle}</p>

@@ -191,8 +191,17 @@ function formatPhone(raw: string) {
   return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
+const SPECIAL_CHAR_RE      = /[^a-zA-Z\u0E00-\u0E7F\u0E80-\u0EFF\u1780-\u17FF0-9\s]/g;
+const SPECIAL_CHAR_PASS_RE = /[^a-zA-Z0-9]/g;
+const SPECIAL_CHAR_REF_RE  = /[^A-Z0-9]/g;
+
+function stripSpecial(value: string, re: RegExp): { cleaned: string; changed: boolean } {
+  const cleaned = value.replace(re, "");
+  return { cleaned, changed: cleaned !== value };
+}
+
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultRef?: string; banks?: BankOption[] }) {
+export default function RegisterForm({ defaultRef = "", defaultMarket = "", banks = [] }: { defaultRef?: string; defaultMarket?: string; banks?: BankOption[] }) {
   const t = useTranslation("register");
   const { lang } = useLang();
   const [state, action] = useActionState(registerAction, {});
@@ -204,6 +213,7 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
   const [showConfirm, setShowConfirm]   = useState(false);
   const [agreed, setAgreed]             = useState(false);
   const [refCode, setRefCode]           = useState(defaultRef.toUpperCase());
+  const [marketCode, setMarketCode]     = useState(defaultMarket);
   const [firstname, setFirstname]       = useState("");
   const [lastname, setLastname]         = useState("");
   const [bankCode, setBankCode]         = useState<number | null>(null);
@@ -268,6 +278,7 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
       )}
       <form action={action} className="flex flex-col gap-4" noValidate>
         <input type="hidden" name="lang" value={lang} />
+        {marketCode && <input type="hidden" name="marketingCode" value={marketCode} />}
 
         {/* Phone */}
         <Input
@@ -292,14 +303,14 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
           <Input
             label={<>{t.firstname}{reqText}</>} name="firstname" type="text"
             placeholder={t.firstnamePlaceholder} autoComplete="given-name"
-            value={firstname} onChange={(e) => setFirstname(e.target.value)}
+            value={firstname} onChange={(e) => setFirstname(stripSpecial(e.target.value, SPECIAL_CHAR_RE).cleaned)}
             error={state.fieldErrors?.firstname}
             leftEl={<UserIcon />}
           />
           <Input
             label={<>{t.lastname}{reqText}</>} name="lastname" type="text"
             placeholder={t.lastnamePlaceholder} autoComplete="family-name"
-            value={lastname} onChange={(e) => setLastname(e.target.value)}
+            value={lastname} onChange={(e) => setLastname(stripSpecial(e.target.value, SPECIAL_CHAR_RE).cleaned)}
             error={state.fieldErrors?.lastname}
             leftEl={<UserIcon />}
           />
@@ -310,7 +321,7 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
           <Input
             label={<>{t.password}{reqText}</>} name="password" type={showPw ? "text" : "password"}
             placeholder={t.passwordPlaceholder} autoComplete="new-password"
-            value={password} onChange={(e) => setPassword(e.target.value.slice(0, 10))}
+            value={password} onChange={(e) => setPassword(stripSpecial(e.target.value.slice(0, 10), SPECIAL_CHAR_PASS_RE).cleaned)}
             error={state.fieldErrors?.password}
             leftEl={<LockIcon />}
             rightEl={
@@ -327,7 +338,7 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
         <Input
           label={<>{t.confirmPassword}{reqText}</>} name="confirmPassword" type={showConfirm ? "text" : "password"}
           placeholder={t.confirmPlaceholder} autoComplete="new-password"
-          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value.slice(0, 10))}
+          value={confirmPassword} onChange={(e) => setConfirmPassword(stripSpecial(e.target.value.slice(0, 10), SPECIAL_CHAR_PASS_RE).cleaned)}
           error={state.fieldErrors?.confirmPassword || (confirmMismatch ? t.confirmMismatch : undefined)}
           leftEl={<ShieldIcon />}
           rightEl={
@@ -375,7 +386,7 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
           <Input
             label={t.referral} name="referralCode" type="text"
             placeholder={t.referralPlaceholder} autoComplete="off"
-            value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase().slice(0, 10))}
+            value={refCode} onChange={(e) => setRefCode(stripSpecial(e.target.value.toUpperCase().slice(0, 10), SPECIAL_CHAR_REF_RE).cleaned)}
             leftEl={<GiftIcon />}
             rightEl={refCode ? (
               <button type="button" onClick={() => setRefCode("")}
@@ -391,6 +402,18 @@ export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultR
             </div>
           )}
         </div>
+
+        {/* Marketing code */}
+        <Input
+          label={t.marketing} name="marketingCode" type="text"
+          placeholder={t.marketingPlaceholder} autoComplete="off"
+          value={marketCode} onChange={(e) => setMarketCode(stripSpecial(e.target.value.slice(0, 50), SPECIAL_CHAR_REF_RE).cleaned)}
+          leftEl={<GiftIcon />}
+          rightEl={marketCode ? (
+            <button type="button" onClick={() => setMarketCode("")}
+              className="text-ap-tertiary hover:text-ap-secondary transition-colors text-[12px]">✕</button>
+          ) : null}
+        />
 
         {/* Terms */}
         <label className="flex items-start gap-3 cursor-pointer group">

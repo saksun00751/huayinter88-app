@@ -182,6 +182,7 @@ export async function registerAction(
   const bankRaw         = (formData.get("bank")            as string) ?? "";
   const bank            = parseInt(bankRaw, 10);
   const referRaw        = ((formData.get("referralCode")   as string) ?? "").trim();
+  const marketRaw       = ((formData.get("marketingCode")  as string) ?? "").trim();
 
   const fieldErrors: RegisterState["fieldErrors"] = {};
   if (!phone)                        fieldErrors.user_name = t.errPhone;
@@ -214,7 +215,8 @@ export async function registerAction(
     acc_no: accNo,
     bank,
     refer: 1,
-    ...(referRaw ? { referral_code: referRaw } : {}),
+    ...(referRaw  ? { referral_code:   referRaw  } : {}),
+    ...(marketRaw ? { marketing: marketRaw } : {}),
   };
   try {
     await apiPost("/auth/register", registerPayload, undefined, lang);
