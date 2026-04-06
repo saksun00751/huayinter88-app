@@ -201,7 +201,7 @@ function stripSpecial(value: string, re: RegExp): { cleaned: string; changed: bo
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function RegisterForm({ defaultRef = "", defaultMarket = "", banks = [] }: { defaultRef?: string; defaultMarket?: string; banks?: BankOption[] }) {
+export default function RegisterForm({ defaultRef = "", banks = [] }: { defaultRef?: string; banks?: BankOption[] }) {
   const t = useTranslation("register");
   const { lang } = useLang();
   const [state, action] = useActionState(registerAction, {});
@@ -213,7 +213,7 @@ export default function RegisterForm({ defaultRef = "", defaultMarket = "", bank
   const [showConfirm, setShowConfirm]   = useState(false);
   const [agreed, setAgreed]             = useState(false);
   const [refCode, setRefCode]           = useState(defaultRef.toUpperCase());
-  const [marketCode, setMarketCode]     = useState(defaultMarket);
+  const [marketing, setMarketing]       = useState("");
   const [firstname, setFirstname]       = useState("");
   const [lastname, setLastname]         = useState("");
   const [bankCode, setBankCode]         = useState<number | null>(null);
@@ -222,6 +222,18 @@ export default function RegisterForm({ defaultRef = "", defaultMarket = "", bank
   const [toastQueue, setToastQueue]     = useState<string[]>([]);
 
   const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const market = params.get("market");
+    if (market) {
+      localStorage.setItem("marketing_code", market);
+      setMarketing(market);
+    } else {
+      const stored = localStorage.getItem("marketing_code");
+      if (stored) setMarketing(stored);
+    }
+  }, []);
 
   useEffect(() => {
     if (state.fieldErrors || state.error) {
@@ -251,7 +263,10 @@ export default function RegisterForm({ defaultRef = "", defaultMarket = "", bank
 
   // ── Success ──────────────────────────────────────────────────────────────────
   if (state.success && state.phone) {
-    if (typeof window !== "undefined") window.location.href = `/${lang}/dashboard`;
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("marketing_code");
+      window.location.href = `/${lang}/dashboard`;
+    }
     return (
       <div className="text-center py-8 animate-fade-up">
         <div className="w-20 h-20 rounded-full bg-ap-green/10 flex items-center justify-center mx-auto mb-5">
@@ -278,7 +293,7 @@ export default function RegisterForm({ defaultRef = "", defaultMarket = "", bank
       )}
       <form action={action} className="flex flex-col gap-4" noValidate>
         <input type="hidden" name="lang" value={lang} />
-        {marketCode && <input type="hidden" name="marketingCode" value={marketCode} />}
+        {marketing && <input type="hidden" name="marketing" value={marketing} />}
 
         {/* Phone */}
         <Input
@@ -402,18 +417,6 @@ export default function RegisterForm({ defaultRef = "", defaultMarket = "", bank
             </div>
           )}
         </div>
-
-        {/* Marketing code */}
-        <Input
-          label={t.marketing} name="marketingCode" type="text"
-          placeholder={t.marketingPlaceholder} autoComplete="off"
-          value={marketCode} onChange={(e) => setMarketCode(stripSpecial(e.target.value.slice(0, 50), SPECIAL_CHAR_REF_RE).cleaned)}
-          leftEl={<GiftIcon />}
-          rightEl={marketCode ? (
-            <button type="button" onClick={() => setMarketCode("")}
-              className="text-ap-tertiary hover:text-ap-secondary transition-colors text-[12px]">✕</button>
-          ) : null}
-        />
 
         {/* Terms */}
         <label className="flex items-start gap-3 cursor-pointer group">
