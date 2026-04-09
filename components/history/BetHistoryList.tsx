@@ -50,7 +50,7 @@ export default function BetHistoryList({ slips }: Props) {
               key={slip.id}
               onClick={() => openDetail(slip.id)}
               disabled={!!loading}
-              className="w-full text-left px-5 py-4 flex items-center gap-3 hover:bg-ap-bg/60 active:bg-ap-bg transition-colors disabled:opacity-60"
+              className={`w-full text-left px-5 py-4 flex items-center gap-3 transition-colors disabled:opacity-60 ${slip.status === "won" ? "bg-green-50 hover:bg-green-100/80 active:bg-green-100" : "hover:bg-ap-bg/60 active:bg-ap-bg"}`}
             >
               {/* Left */}
               <div className="flex-1 min-w-0">
@@ -75,8 +75,8 @@ export default function BetHistoryList({ slips }: Props) {
                   ฿{slip.totalAmount.toLocaleString("th-TH")}
                 </p>
                 {slip.status === "won" ? (
-                  <p className="text-[12px] font-bold text-ap-green tabular-nums">
-                    +฿{slip.totalPayout.toLocaleString("th-TH")}
+                  <p className="text-[14px] font-extrabold text-green-700 tabular-nums">
+                    + ฿{slip.totalPayout.toLocaleString("th-TH")}
                   </p>
                 ) : (
                   <p className="text-[11px] text-ap-tertiary tabular-nums">

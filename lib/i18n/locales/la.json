@@ -193,6 +193,8 @@
     "errorUnknown": "ເກີດຂໍ້ຜິດພາດ",
     "blockedNumbers": "ເລກອັ້ນ",
     "blockedNumberMessage": "ເປັນເລກອັ້ນ ບໍ່ສາມາດແທງໄດ້",
+    "not3permMessage": "ບໍ່ແມ່ນເລກ 3ກັບ (ຕ້ອງມີເລກຊ້ຳ ເຊັ່ນ 255, 366)",
+    "not6permMessage": "ບໍ່ແມ່ນເລກ 6ກັບ (ຫ້າມມີເລກຊ້ຳ ເຊັ່ນ 123, 456)",
     "blockedNumberShort": "ເປັນເລກອັ້ນ",
     "duplicatePreviewMessage": "ຊ້ຳໃນ preview",
     "duplicateSlipMessage": "ມີຢູ່ໃນໂພຍແລ້ວ",

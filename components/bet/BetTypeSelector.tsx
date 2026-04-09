@@ -113,7 +113,7 @@ export default function BetTypeSelector({ betType, onChange, selected3, selected
               </div>
 
               {/* Checkboxes — 3digit/2digit/run: ติ๊กได้ทั้งคู่, อื่น: single select */}
-              <div className="px-3 pb-2.5 flex gap-2">
+              <div className="px-3 py-2.5 flex gap-2">
                 {group.types.map((bt) => {
                   const checked = group.key === "3digit" && isActive
                     ? (selected3?.includes(bt.id) ?? true)

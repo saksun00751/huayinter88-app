@@ -193,6 +193,8 @@
     "errorUnknown": "เกิดข้อผิดพลาด",
     "blockedNumbers": "เลขอั้น",
     "blockedNumberMessage": "เป็นเลขอั้น ไม่สามารถแทงได้",
+    "not3permMessage": "ไม่ใช่เลข 3กลับ (ต้องมีเลขซ้ำ เช่น 255, 366)",
+    "not6permMessage": "ไม่ใช่เลข 6กลับ (ห้ามมีเลขซ้ำ เช่น 123, 456)",
     "blockedNumberShort": "เป็นเลขอั้น",
     "duplicatePreviewMessage": "ซ้ำใน preview",
     "duplicateSlipMessage": "มีอยู่ในโพยแล้ว",

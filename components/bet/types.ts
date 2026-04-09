@@ -62,6 +62,14 @@ export const TRIPLED = ["000","111","222","333","444","555","666","777","888","9
 export function genId()     { return Math.random().toString(36).slice(2, 8).toUpperCase(); }
 export function genSlipNo() { return `SLP${Date.now().toString(36).toUpperCase()}`; }
 
+export function isValid3Perm(str: string): boolean {
+  return str.length === 3 && new Set(str).size === 2;
+}
+
+export function isValid6Perm(str: string): boolean {
+  return str.length === 3 && new Set(str).size === 3;
+}
+
 export function permutations(str: string): string[] {
   if (str.length <= 1) return [str];
   const result = new Set<string>();

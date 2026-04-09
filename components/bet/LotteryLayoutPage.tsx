@@ -48,6 +48,8 @@ export default function LotteryLayoutPage({
   const [selectedRun, setSelectedRun] = useState<BetTypeId[]>(["run"]);
   const [specialMode, setSpecialMode] = useState<BetTypeId | null>(null);
   const [isClassic,   setIsClassic]   = useState(false);
+  const [tripleTrigger, setTripleTrigger] = useState(0);
+  const [doubleTrigger, setDoubleTrigger] = useState(0);
 
   const availableBetTypeIds = betRates.map((r) => r.id);
   // เพิ่ม run/winlay อัตโนมัติถ้า API ไม่ส่งมา แต่มี 2top อยู่
@@ -56,7 +58,7 @@ export default function LotteryLayoutPage({
     if (!enrichedIds.includes("run"))    enrichedIds.push("run");
     if (!enrichedIds.includes("winlay")) enrichedIds.push("winlay");
   }
-  const specialTypes: BetTypeId[] = ["2perm", "3perm", "6perm", "19door", "winnum"];
+  const specialTypes: BetTypeId[] = ["2perm", "3perm", "6perm", "19door"];
   const selectorTypeIds = enrichedIds.length
     ? enrichedIds.filter((id) => !specialTypes.includes(id))
     : BET_TYPE_BTNS.map((b) => b.id).filter((id) => !specialTypes.includes(id));
@@ -167,17 +169,17 @@ export default function LotteryLayoutPage({
                 { id: "3perm",  label: t.betType3perm },
                 { id: "6perm",  label: t.betType6perm },
                 { id: "19door", label: t.betType19door },
-                { id: "winnum", label: t.betTypeWinnum },
               ];
               const visible = specialModes.filter((m) => {
                 if (m.id === "2perm")  return betType === "2top" || betType === "2bot";
                 if (m.id === "3perm")  return betType === "3top" || betType === "3tod";
                 if (m.id === "6perm")  return betType === "3top" || betType === "3tod";
                 if (m.id === "19door") return betType === "2top" || betType === "2bot";
-                if (m.id === "winnum") return betType === "2top" || betType === "2bot";
                 return false;
               });
-              if (!visible.length || isClassic) return null;
+              const show3Tong = betType === "3top" || betType === "3tod";
+              const show2Double = betType === "2top" || betType === "2bot";
+              if ((!visible.length && !show3Tong && !show2Double) || isClassic) return null;
               return (
                 <div className="bg-white rounded-2xl border border-ap-border shadow-card overflow-hidden">
                   <div className="px-4 py-2.5 bg-gradient-to-r from-ap-blue to-sky-400 border-b border-ap-border">
@@ -202,6 +204,24 @@ export default function LotteryLayoutPage({
                         </button>
                       );
                     })}
+                    {show3Tong && (
+                      <button
+                        type="button"
+                        onClick={() => setTripleTrigger((n) => n + 1)}
+                        className="py-2 rounded-xl text-[13px] font-bold border transition-all bg-yellow-50 border-yellow-300 text-yellow-700 hover:bg-yellow-100 active:scale-95"
+                      >
+                        {t.tripleNumbers}
+                      </button>
+                    )}
+                    {show2Double && (
+                      <button
+                        type="button"
+                        onClick={() => setDoubleTrigger((n) => n + 1)}
+                        className="py-2 rounded-xl text-[13px] font-bold border transition-all bg-yellow-50 border-yellow-300 text-yellow-700 hover:bg-yellow-100 active:scale-95"
+                      >
+                        {t.doubleNumbers}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -223,6 +243,8 @@ export default function LotteryLayoutPage({
               bettingContext={bettingContext}
               onAddBills={handleAddBills}
               onClearAll={handleClearAll}
+              tripleTrigger={tripleTrigger}
+              doubleTrigger={doubleTrigger}
               onTabChange={(tab) => setIsClassic(tab === "classic")}
             />
           </div>

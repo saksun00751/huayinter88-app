@@ -55,7 +55,7 @@ export default function TicketList({ tickets, t }: { tickets: Ticket[]; t: T }) 
             key={ticket.id}
             onClick={() => openDetail(ticket.id)}
             disabled={!!loading}
-            className="w-full text-left px-4 py-4 flex items-center gap-3 hover:bg-ap-bg/60 transition-colors disabled:opacity-60"
+            className={`w-full text-left px-4 py-4 flex items-center gap-3 transition-colors disabled:opacity-60 ${ticket.status === "won" ? "bg-green-50 hover:bg-green-100/80 active:bg-green-100" : "hover:bg-ap-bg/60 active:bg-ap-bg"}`}
           >
             {/* Logo */}
             <div className="w-10 h-10 rounded-xl border border-ap-border bg-ap-bg flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -74,7 +74,7 @@ export default function TicketList({ tickets, t }: { tickets: Ticket[]; t: T }) 
                   {STATUS_LABEL[ticket.status] ?? ticket.status}
                 </span>
               </div>
-              <p className="text-[11px] text-ap-tertiary">
+                <p className="text-[11px] text-ap-secondary">
                 {ticket.group_name}
                 <span className="mx-1.5 text-ap-border">·</span>
                 {t.draw} {ticket.draw_date}
@@ -85,24 +85,15 @@ export default function TicketList({ tickets, t }: { tickets: Ticket[]; t: T }) 
 
             {/* Amount */}
             <div className="text-right shrink-0">
-              {ticket.total_discount_amount > 0 ? (
-                <>
-                  <p className="text-[12px] text-ap-tertiary tabular-nums line-through">
-                    ฿{Number(ticket.total_bet_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-[11px] text-green-600 tabular-nums">
-                    -฿{Number(ticket.total_discount_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-[15px] font-bold text-ap-primary tabular-nums">
-                    ฿{Number(ticket.total_net_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                </>
+              {ticket.status === "won" && ticket.total_win_amount ? (
+                <p className="text-[16px] font-extrabold text-green-700 tabular-nums">
+                  + ฿{Number(ticket.total_win_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
               ) : (
                 <p className="text-[15px] font-bold text-ap-primary tabular-nums">
                   ฿{Number(ticket.total_net_amount || ticket.total_amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               )}
-              <p className="text-[11px] text-ap-tertiary">#{ticket.id}</p>
             </div>
             <div className="shrink-0 ml-1">
               {isLoading ? (
@@ -111,7 +102,7 @@ export default function TicketList({ tickets, t }: { tickets: Ticket[]; t: T }) 
                   <path d="M22 12a10 10 0 01-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               ) : (
-                <svg className="w-4 h-4 text-ap-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="w-4 h-4 text-ap-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}

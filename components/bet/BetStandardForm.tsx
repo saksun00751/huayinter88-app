@@ -4,12 +4,12 @@ import Toast from "@/components/ui/Toast";
 import { useLang } from "@/lib/i18n/context";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
-  BetTypeId, BillRow, MAX_DIGITS,
-  genId, genSlipNo, addUnique, permutations,
+  BetTypeId, BillRow, MAX_DIGITS, DOUBLED, TRIPLED,
+  genId, genSlipNo, addUnique, permutations, isValid3Perm, isValid6Perm,
 } from "./types";
 import type { NumberLimitRow, BettingContext } from "@/lib/types/bet";
 
-const SPECIAL_FUNCTION_TYPES = ["2perm", "3perm", "6perm", "19door", "winnum"] as const;
+const SPECIAL_FUNCTION_TYPES = ["2perm", "3perm", "6perm", "19door"] as const;
 type SpecialFunctionType = (typeof SPECIAL_FUNCTION_TYPES)[number];
 const isSpecialFunctionType = (id: BetTypeId): id is SpecialFunctionType =>
   (SPECIAL_FUNCTION_TYPES as readonly string[]).includes(id);
@@ -39,10 +39,12 @@ interface Props {
   bills:           BillRow[];
   numberLimits:    NumberLimitRow[];
   bettingContext?: BettingContext;
+  tripleTrigger?:  number;
+  doubleTrigger?:  number;
   onAddBills:      (rows: BillRow[]) => void;
 }
 
-export default function BetStandardForm({ betType, baseBetType, selected3, selected2, selectedRun, bills, numberLimits, bettingContext, onAddBills }: Props) {
+export default function BetStandardForm({ betType, baseBetType, selected3, selected2, selectedRun, bills, numberLimits, bettingContext, tripleTrigger, doubleTrigger, onAddBills }: Props) {
   const { lang } = useLang();
   const t = useTranslation("bet");
   const localeByLang: Record<string, string> = { th: "th-TH", en: "en-US", kh: "km-KH", la: "lo-LA" };
@@ -52,7 +54,7 @@ export default function BetStandardForm({ betType, baseBetType, selected3, selec
   const pairingType: BetTypeId = (() => {
     if (isSpecialFunctionType(betType) && baseBetType) return baseBetType;
     if (betType === "3perm" || betType === "6perm") return "3top";
-    if (betType === "2perm" || betType === "19door" || betType === "winnum") return "2top";
+    if (betType === "2perm" || betType === "19door") return "2top";
     return betType;
   })();
 
@@ -101,6 +103,20 @@ export default function BetStandardForm({ betType, baseBetType, selected3, selec
   const [botAmt,     setBotAmt]     = useState("");
   const [toastMsg,   setToastMsg]   = useState<{ text: string; type: "warning" | "error" } | null>(null);
 
+  useEffect(() => {
+    if (tripleTrigger && tripleTrigger > 0) {
+      setPreview((prev) => addUnique(prev, TRIPLED));
+      setToastMsg({ text: `✅ ${t.tripleNumbers} ${TRIPLED.join(", ")}`, type: "warning" });
+    }
+  }, [tripleTrigger]);
+
+  useEffect(() => {
+    if (doubleTrigger && doubleTrigger > 0) {
+      setPreview((prev) => addUnique(prev, DOUBLED));
+      setToastMsg({ text: `✅ ${t.doubleNumbers} ${DOUBLED.join(", ")}`, type: "warning" });
+    }
+  }, [doubleTrigger]);
+
   // reset เมื่อเปลี่ยน betType
   useEffect(() => {
     setPreview([]);
@@ -134,9 +150,18 @@ export default function BetStandardForm({ betType, baseBetType, selected3, selec
         const rev = next.split("").reverse().join("");
         expanded = rev === next ? [next] : [next, rev];
       } else if (betType === "3perm") {
-        const rev = next.split("").reverse().join("");
-        expanded = rev === next ? [next] : [next, rev];
+        if (!isValid3Perm(next)) {
+          setToastMsg({ text: `⚠️ ${next} ${t.not3permMessage}`, type: "error" });
+          setInputBuf("");
+          return;
+        }
+        expanded = permutations(next);
       } else if (betType === "6perm") {
+        if (!isValid6Perm(next)) {
+          setToastMsg({ text: `⚠️ ${next} ${t.not6permMessage}`, type: "error" });
+          setInputBuf("");
+          return;
+        }
         expanded = permutations(next);
       } else {
         expanded = [next];

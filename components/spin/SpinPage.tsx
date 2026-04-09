@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { spinWheelAction } from "@/lib/actions";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { useLang } from "@/lib/i18n/context";
 import type { AuthUser } from "@/lib/session/auth";
@@ -17,6 +16,15 @@ export interface WheelSegment {
   color:    string;
   name:     string;
   types:    string;
+}
+
+interface SpinResult {
+  error?:   string;
+  point?:   number;
+  diamond?: number;
+  title?:   string;
+  msg?:     string;
+  img?:     string;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -34,6 +42,7 @@ export default function SpinPage({
   const { lang }     = useLang();
 
   const wheelRef = useRef<any>(null);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isSpinning, setIsSpinning] = useState(false);
   const [diamond, setDiamond]       = useState(user.diamond);
@@ -41,7 +50,10 @@ export default function SpinPage({
   useEffect(() => {
     if (segments.length === 0) return;
 
+    let cancelled = false;
+
     const initWheel = () => {
+      if (cancelled) return;
       const W = (window as any).Winwheel;
       if (!W) return;
       wheelRef.current = new W({
@@ -53,20 +65,29 @@ export default function SpinPage({
         innerRadius:    0,
         strokeStyle:    "white",
         lineWidth:      2,
-        segments:       segments.map((seg) => ({ image: seg.imageUrl })),
+        segments:       segments.map((seg) => ({
+          fillStyle: seg.color,
+          image:     seg.imageUrl,
+        })),
         animation: {
           type:     "spinToStop",
           duration: 5,
           spins:    8,
         },
       });
-      // wheelRef.current.draw();
     };
 
     const loadWheel = () => {
       if ((window as any).Winwheel) { initWheel(); return; }
+      const existing = document.querySelector('script[data-winwheel-script="true"]') as HTMLScriptElement | null;
+      if (existing) {
+        existing.addEventListener("load", initWheel, { once: true });
+        return;
+      }
+
       const s  = document.createElement("script");
       s.src    = "/Winwheel.min.js";
+      s.dataset.winwheelScript = "true";
       s.onload = initWheel;
       document.body.appendChild(s);
     };
@@ -74,23 +95,56 @@ export default function SpinPage({
     if ((window as any).TweenMax) {
       loadWheel();
     } else {
-      const s  = document.createElement("script");
-      s.src    = "/TweenMax.min.js";
-      s.onload = loadWheel;
-      document.body.appendChild(s);
+      const existing = document.querySelector('script[data-tweenmax-script="true"]') as HTMLScriptElement | null;
+      if (existing) {
+        existing.addEventListener("load", loadWheel, { once: true });
+      } else {
+        const s  = document.createElement("script");
+        s.src    = "/TweenMax.min.js";
+        s.dataset.tweenmaxScript = "true";
+        s.onload = loadWheel;
+        document.body.appendChild(s);
+      }
     }
+
+    return () => {
+      cancelled = true;
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+      }
+    };
   }, [segments]);
 
   const handleSpin = async () => {
     if (isSpinning || diamond < 1 || !wheelEnabled || !wheelRef.current) return;
     setIsSpinning(true);
 
-    // Reset wheel before each spin
-    // wheelRef.current.stopAnimation(false);
-    // wheelRef.current.rotationAngle = 0;
-    // wheelRef.current.draw();
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
 
-    const result = await spinWheelAction();
+    wheelRef.current.stopAnimation(false);
+    wheelRef.current.rotationAngle = 0;
+    wheelRef.current.animation.stopAngle = undefined;
+    wheelRef.current.animation.callbackFinished = undefined;
+    wheelRef.current.draw();
+
+    let result: SpinResult;
+    try {
+      const res = await fetch("/api/wheel/spin", {
+        method:      "POST",
+        cache:       "no-store",
+        credentials: "same-origin",
+      });
+      result = await res.json();
+      if (!res.ok) {
+        result = { error: result.error ?? "เกิดข้อผิดพลาด กรุณาลองใหม่" };
+      }
+    } catch {
+      result = { error: "เกิดข้อผิดพลาด กรุณาลองใหม่" };
+    }
 
     if (result.error) {
       toast.error(result.error);
@@ -98,20 +152,24 @@ export default function SpinPage({
       return;
     }
 
-    const stopAngle = 355;
-    // if (stopAngle == null) {
-    //   toast.error("ไม่สามารถหมุนวงล้อได้ กรุณาลองใหม่");
-    //   setIsSpinning(false);
-    //   return;
-    // }
+    const stopAngle = typeof result.point === "number" ? result.point : undefined;
 
-    // wheelRef.current.animation.stopAngle = stopAngle;
+    if (typeof stopAngle !== "number") {
+      toast.error("ไม่สามารถระบุตำแหน่งวงล้อได้");
+      setIsSpinning(false);
+      return;
+    }
 
-    const animDuration = (wheelRef.current.animation.duration ?? 5) * 5000;
+    wheelRef.current.animation.stopAngle = stopAngle;
+    const animDuration = (wheelRef.current.animation.duration ?? 5) * 1000;
     let shown = false;
     const showResult = () => {
       if (shown) return;
       shown = true;
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+      }
       toast.success(result.title ?? "ยินดีด้วย!", {
         description: result.msg,
         duration:    5000,
@@ -124,7 +182,10 @@ export default function SpinPage({
     wheelRef.current.startAnimation();
 
     // Fallback กรณี Winwheel callback ไม่ถูกเรียก
-    setTimeout(showResult, animDuration + 500);
+    fallbackTimerRef.current = setTimeout(() => {
+      wheelRef.current?.stopAnimation(false);
+      showResult();
+    }, animDuration + 800);
   };
 
   return (

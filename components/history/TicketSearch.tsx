@@ -75,7 +75,7 @@ export default function TicketSearch({ search, drawDate, limit, t }: Props) {
 
       {/* Limit row */}
       <div className="flex items-center gap-2">
-        <span className="text-[12px] text-ap-tertiary">{t.show}</span>
+        <span className="text-[12px] text-ap-secondary">{t.show}</span>
         <div className="flex rounded-xl border border-ap-border bg-white overflow-hidden text-[13px]">
           {LIMITS.map((n) => (
             <button
@@ -91,7 +91,7 @@ export default function TicketSearch({ search, drawDate, limit, t }: Props) {
             </button>
           ))}
         </div>
-        <span className="text-[12px] text-ap-tertiary">{t.perPage}</span>
+        <span className="text-[12px] text-ap-secondary">{t.perPage}</span>
       </div>
     </div>
   );

@@ -115,7 +115,6 @@ export default function Navbar({ logoUrl, balance, diamond, userName, userPhone 
               <span className="text-[12px] sm:text-[13px] font-semibold text-ap-primary tabular-nums">
                 ฿{balance.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className=" sm:inline text-[11px] text-ap-blue font-medium">+ เติม</span>
             </Link>
 
             {/* Avatar + dropdown */}

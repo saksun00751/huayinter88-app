@@ -22,6 +22,7 @@ export interface Ticket {
   total_bet_amount:      number;
   total_discount_amount: number;
   total_net_amount:      number;
+  total_win_amount?:     number;
   created_at:            string;
 }
 
@@ -112,7 +113,7 @@ export default async function HistoryPage({ params, searchParams }: Props) {
           </Link>
           <div>
             <h1 className="text-[18px] font-bold text-ap-primary leading-tight">{t.title}</h1>
-            <p className="text-[12px] text-ap-tertiary">{t.found} {total.toLocaleString()} {t.items}</p>
+            <p className="text-[12px] text-ap-secondary">{t.found} {total.toLocaleString()} {t.items}</p>
           </div>
         </div>
 
@@ -140,7 +141,7 @@ export default async function HistoryPage({ params, searchParams }: Props) {
             <div className="py-16 text-center">
               <p className="text-[32px] mb-3">📋</p>
               <p className="text-[14px] font-semibold text-ap-primary mb-1">{t.emptyTitle}</p>
-              <p className="text-[12px] text-ap-tertiary">{t.emptyDesc}</p>
+              <p className="text-[12px] text-ap-secondary">{t.emptyDesc}</p>
               <Link href={`/${locale}/bet`}
                 className="inline-block mt-4 px-6 py-2.5 bg-ap-blue text-white rounded-full text-[13px] font-semibold hover:bg-ap-blue-h transition-colors">
                 {t.gobet}
@@ -162,7 +163,7 @@ export default async function HistoryPage({ params, searchParams }: Props) {
             )}
             {pageNums.map((n, i) =>
               n === "..." ? (
-                <span key={`dots-${i}`} className="px-2 py-2 text-[13px] text-ap-tertiary">…</span>
+                <span key={`dots-${i}`} className="px-2 py-2 text-[13px] text-ap-secondary">…</span>
               ) : (
                 <Link key={n} href={buildHref({ page: n })}
                   className={[

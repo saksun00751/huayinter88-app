@@ -8,11 +8,11 @@ import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
   BetTypeId, TabId, BillRow,
   MAX_DIGITS, TABS, DOUBLED, TRIPLED,
-  genId, genSlipNo, permutations, nineteenDoor, addUnique,
+  genId, genSlipNo, permutations, nineteenDoor, addUnique, isValid3Perm, isValid6Perm,
 } from "./types";
 import type { NumberLimitRow, BettingContext } from "@/lib/types/bet";
 
-const SPECIAL_FUNCTION_TYPES = ["2perm", "3perm", "6perm", "19door", "winnum"] as const;
+const SPECIAL_FUNCTION_TYPES = ["2perm", "3perm", "6perm", "19door"] as const;
 type SpecialFunctionType = (typeof SPECIAL_FUNCTION_TYPES)[number];
 const isSpecialFunctionType = (id: BetTypeId): id is SpecialFunctionType =>
   (SPECIAL_FUNCTION_TYPES as readonly string[]).includes(id);
@@ -32,7 +32,7 @@ function isBlocked(number: string, betType: BetTypeId, limits: NumberLimitRow[])
 // bet type ที่ตรงกับ input ล่าง/โต๊ด ของแต่ละ bet type
 const BOT_BET_TYPE: Partial<Record<BetTypeId, BetTypeId>> = {
   "3top": "3tod", "3perm": "3tod", "6perm": "3tod",
-  "2top": "2bot", "2perm": "2bot", "19door": "2bot", "winnum": "2bot",
+  "2top": "2bot", "2perm": "2bot", "19door": "2bot",
   "run": "winlay",
 };
 
@@ -52,6 +52,8 @@ interface Props {
   bettingContext?:    BettingContext;
   onAddBills:         (rows: BillRow[]) => void;
   onClearAll:         () => void;
+  tripleTrigger?:     number;
+  doubleTrigger?:     number;
   onTabChange?:       (tab: TabId) => void;
 }
 
@@ -70,6 +72,8 @@ export default function BetQuickForm({
   bettingContext,
   onAddBills,
   onClearAll,
+  tripleTrigger,
+  doubleTrigger,
   onTabChange,
 }: Props) {
   const { lang } = useLang();
@@ -82,7 +86,7 @@ export default function BetQuickForm({
   const pairingType: BetTypeId = (() => {
     if (isSpecialFunctionType(betType) && baseBetType) return baseBetType;
     if (betType === "3perm" || betType === "6perm") return "3top";
-    if (betType === "2perm" || betType === "19door" || betType === "winnum") return "2top";
+    if (betType === "2perm" || betType === "19door") return "2top";
     return betType;
   })();
 
@@ -110,8 +114,8 @@ export default function BetQuickForm({
     ? bettingContext?.["winlay"]
     : bettingContext?.[botBillType];
 
-  const TOP_TYPES: BetTypeId[] = ["3top", "3perm", "6perm", "2top", "2perm", "19door", "winnum", "run"];
-  const BOT_TYPES: BetTypeId[] = ["3perm", "6perm", "3tod", "2perm", "19door", "winnum", "2bot", "winlay"];
+  const TOP_TYPES: BetTypeId[] = ["3top", "3perm", "6perm", "2top", "2perm", "19door", "run"];
+  const BOT_TYPES: BetTypeId[] = ["3perm", "6perm", "3tod", "2perm", "19door", "2bot", "winlay"];
   const showTop = is3DigitPair
     ? (selected3?.includes("3top") ?? true)
     : is2DigitPair
@@ -157,6 +161,20 @@ export default function BetQuickForm({
   const [note,        setNote]        = useState("");
   const [slipText,    setSlipText]    = useState("");
 
+  useEffect(() => {
+    if (tripleTrigger && tripleTrigger > 0) {
+      setPreview((prev) => addUnique(prev, TRIPLED));
+      setToastMsg({ text: `✅ ${t.tripleNumbers} ${TRIPLED.join(", ")}`, type: "warning" });
+    }
+  }, [tripleTrigger]);
+
+  useEffect(() => {
+    if (doubleTrigger && doubleTrigger > 0) {
+      setPreview((prev) => addUnique(prev, DOUBLED));
+      setToastMsg({ text: `✅ ${t.doubleNumbers} ${DOUBLED.join(", ")}`, type: "warning" });
+    }
+  }, [doubleTrigger]);
+
   const handleSlipChange = (val: string) => {
     const hasDelimiter = /[\s,]/.test(val[val.length - 1] ?? "");
     const tokens = val.split(/[\s,]+/).map((t) => t.replace(/\D/g, "")).filter(Boolean);
@@ -164,6 +182,38 @@ export default function BetQuickForm({
     const inProgress = hasDelimiter ? "" : (tokens[tokens.length - 1] ?? "");
 
     const valid = complete.filter((t) => t.length === maxDigits);
+    if (betType === "3perm") {
+      const invalid3p = valid.filter((n) => !isValid3Perm(n));
+      if (invalid3p.length > 0)
+        setToastMsg({ text: `⚠️ ${invalid3p.join(", ")} ${t.not3permMessage}`, type: "error" });
+      const valid3p = valid.filter((n) => isValid3Perm(n));
+      if (valid3p.length > 0) {
+        const blockedNums = valid3p.filter((n) => isBlocked(n, topBillType, numberLimits));
+        const allowedNums = valid3p.filter((n) => !isBlocked(n, topBillType, numberLimits));
+        if (blockedNums.length > 0)
+          setToastMsg({ text: `🔒 ${t.numberLabel} ${blockedNums.join(", ")} ${t.blockedNumberMessage}`, type: "error" });
+        if (allowedNums.length > 0)
+          setPreview((prev) => addUnique(prev, allowedNums));
+      }
+      setSlipText(inProgress);
+      return;
+    }
+    if (betType === "6perm") {
+      const invalid6p = valid.filter((n) => !isValid6Perm(n));
+      if (invalid6p.length > 0)
+        setToastMsg({ text: `⚠️ ${invalid6p.join(", ")} ${t.not6permMessage}`, type: "error" });
+      const valid6p = valid.filter((n) => isValid6Perm(n));
+      if (valid6p.length > 0) {
+        const blockedNums = valid6p.filter((n) => isBlocked(n, topBillType, numberLimits));
+        const allowedNums = valid6p.filter((n) => !isBlocked(n, topBillType, numberLimits));
+        if (blockedNums.length > 0)
+          setToastMsg({ text: `🔒 ${t.numberLabel} ${blockedNums.join(", ")} ${t.blockedNumberMessage}`, type: "error" });
+        if (allowedNums.length > 0)
+          setPreview((prev) => addUnique(prev, allowedNums));
+      }
+      setSlipText(inProgress);
+      return;
+    }
     if (valid.length > 0) {
       const blockedNums = valid.filter((n) => isBlocked(n, topBillType, numberLimits));
       const allowedNums = valid.filter((n) => !isBlocked(n, topBillType, numberLimits));
@@ -181,8 +231,7 @@ export default function BetQuickForm({
       return rev === digits ? [digits] : [digits, rev];
     }
     if (betType === "3perm") {
-      const rev = digits.split("").reverse().join("");
-      return rev === digits ? [digits] : [digits, rev];
+      return permutations(digits);
     }
     if (betType === "6perm")  return permutations(digits);
     if (betType === "19door") return nineteenDoor(digits);
@@ -193,6 +242,17 @@ export default function BetQuickForm({
     const digits = val.replace(/\D/g, "").slice(0, maxDigits);
     setInputBuf(digits);
     if (digits.length === maxDigits) {
+      if (betType === "3perm" && !isValid3Perm(digits)) {
+        setToastMsg({ text: `⚠️ ${digits} ${t.not3permMessage}`, type: "error" });
+        setInputBuf("");
+        return;
+      }
+      if (betType === "6perm" && !isValid6Perm(digits)) {
+        setToastMsg({ text: `⚠️ ${digits} ${t.not6permMessage}`, type: "error" });
+        setInputBuf("");
+        return;
+      }
+
       const expanded = expandNumber(digits);
 
       const blockedNums = expanded.filter((n) => isBlocked(n, topBillType, numberLimits));
@@ -214,17 +274,6 @@ export default function BetQuickForm({
     }
   };
 
-  const handleReverse = () => {
-    if (preview.length > 0) {
-      const expanded = maxDigits === 3
-        ? preview.flatMap((n) => permutations(n))
-        : preview.map((n) => n.split("").reverse().join(""));
-      setPreview((prev) => addUnique(prev, expanded));
-    }
-  };
-
-  const handleDouble = () => setPreview((prev) => addUnique(prev, DOUBLED));
-  const handleTriple = () => setPreview((prev) => addUnique(prev, TRIPLED));
   const resetKey = baseBetType ?? betType;
 
   useEffect(() => {
@@ -372,6 +421,8 @@ export default function BetQuickForm({
           bills={bills}
           numberLimits={numberLimits}
           bettingContext={bettingContext}
+          tripleTrigger={tripleTrigger}
+          doubleTrigger={doubleTrigger}
           onAddBills={onAddBills}
         />
       )}
@@ -436,24 +487,6 @@ export default function BetQuickForm({
               <span className="text-[13px] font-bold text-ap-blue tabular-nums">{preview.length} {t.countUnit}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              {(betType === "2top" || betType === "2bot") && (
-                <button onClick={handleDouble}
-                  className="text-[12px] font-bold px-2.5 py-1 rounded-lg border-2 border-yellow-400 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 active:scale-95 transition-all">
-                  + {t.doubleNumbers}
-                </button>
-              )}
-              {(betType === "3top" || betType === "3tod") && (
-                <button onClick={handleTriple}
-                  className="text-[12px] font-bold px-2.5 py-1 rounded-lg border-2 border-yellow-400 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 active:scale-95 transition-all">
-                  + {t.tripleNumbers}
-                </button>
-              )}
-              {maxDigits >= 2 && (
-                <button onClick={handleReverse} disabled={preview.length === 0}
-                  className="text-[12px] font-bold px-2.5 py-1 rounded-lg bg-ap-orange text-white hover:opacity-85 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                  🔄 {t.reverseNumbers}
-                </button>
-              )}
             </div>
           </div>
 

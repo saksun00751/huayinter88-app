@@ -18,6 +18,7 @@ interface WinwheelAnimationOptions {
   yoyo?:              boolean;
   propertyName?:      string;
   propertyValue?:     number;
+  stopAngle?:         number;
   callbackFinished?:  (segment: WinwheelSegmentOptions) => void;
   callbackAfterEach?: () => void;
 }
@@ -45,6 +46,8 @@ interface WinwheelOptions {
 declare class Winwheel {
   constructor(options: WinwheelOptions, drawWheel?: boolean);
   rotationAngle: number;
+  animation: WinwheelAnimationOptions;
+  segments: Array<WinwheelSegmentOptions & { startAngle: number; endAngle: number }>;
   draw(): void;
   startAnimation(): void;
   stopAnimation(canCallback?: boolean): void;

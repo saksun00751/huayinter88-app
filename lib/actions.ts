@@ -371,7 +371,7 @@ export async function placeBetAction(
 export async function spinWheelAction(): Promise<{
   error?:   string;
   code?:    number;
-  prize?:   number;
+  point?:   number;
   diamond?: number;
   title?:   string;
   msg?:     string;
@@ -397,10 +397,10 @@ export async function spinWheelAction(): Promise<{
 
     const fmt    = res.format ?? {};
     const code   = res.code;
-    const prize  = fmt.point;
+    const point  = fmt.point;
     const diamond = fmt.diamond ?? res.diamond;
 
-    return { code, prize, diamond, title: fmt.title, msg: fmt.msg, img: fmt.img };
+    return { code, point, diamond, title: fmt.title, msg: fmt.msg, img: fmt.img };
   } catch (err: any) {
     return { error: err?.message ?? "เกิดข้อผิดพลาด กรุณาลองใหม่" };
   }

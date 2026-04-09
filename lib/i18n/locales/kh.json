@@ -193,6 +193,8 @@
     "errorUnknown": "មានបញ្ហា",
     "blockedNumbers": "លេខទប",
     "blockedNumberMessage": "ត្រូវបានទប មិនអាចភ្នាល់",
+    "not3permMessage": "មិនមែនជាលេខ 3បញ្ច្រាស (ត្រូវមានលេខស្ទួន ឧ. 255, 366)",
+    "not6permMessage": "មិនមែនជាលេខ 6បញ្ច្រាស (មិនអាចមានលេខស្ទួន ឧ. 123, 456)",
     "blockedNumberShort": "ត្រូវបានទប",
     "duplicatePreviewMessage": "មានហើយក្នុង Preview",
     "duplicateSlipMessage": "មានហើយក្នុង Slip",

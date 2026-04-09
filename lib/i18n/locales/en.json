@@ -193,6 +193,8 @@
     "errorUnknown": "Something went wrong",
     "blockedNumbers": "Blocked Numbers",
     "blockedNumberMessage": "is blocked and cannot be bet",
+    "not3permMessage": "is not a valid 3-reverse number (must have a repeated digit, e.g. 255, 366)",
+    "not6permMessage": "is not a valid 6-reverse number (digits must be unique, e.g. 123, 456)",
     "blockedNumberShort": "is blocked",
     "duplicatePreviewMessage": "already exists in preview",
     "duplicateSlipMessage": "already exists in the slip",
