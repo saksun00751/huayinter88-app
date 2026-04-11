@@ -53,7 +53,19 @@ export default async function LocaleLayout({
     <LangProvider initialLang={locale}>
       <ProgressBar />
       <ApiErrorToastListener />
-      <Toaster position="top-center" richColors />
+      <Toaster
+        position="top-center"
+        richColors
+        toastOptions={{
+          style: {
+            fontSize: "16px",
+            borderRadius: "10px",
+            fontWeight: "500",  
+            padding: "16px 20px",
+            minWidth: "340px",
+          },
+        }}
+      />
       {children}
     </LangProvider>
   );
