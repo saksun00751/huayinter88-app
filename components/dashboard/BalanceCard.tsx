@@ -117,15 +117,15 @@ export default function BalanceCard({ phone, displayName }: Props) {
 
         <div className="p-4 flex flex-col items-center justify-center gap-0.5" style={{ borderRight: "1px solid rgba(255,255,255,0.15)", borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
           <span className="text-white text-[20px] font-bold tabular-nums">{loading ? "..." : fmt(data?.balance ?? 0)}</span>
-          <span className="text-white/70 text-[11px]">{t.balance}</span>
+          <span className="text-white/70 text-[14px]">{t.balance}</span>
         </div>
         <div className="p-4 flex flex-col items-center justify-center gap-0.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
           <span className="text-white text-[20px] font-bold tabular-nums">{loading ? "..." : fmt(data?.diamond ?? 0)}</span>
-          <span className="text-white/70 text-[11px]">{t.diamond}</span>
+          <span className="text-white/70 text-[14px]">{t.diamond}</span>
         </div>
         <div className="p-4 flex flex-col items-center justify-center gap-0.5" style={{ borderRight: "1px solid rgba(255,255,255,0.15)" }}>
           <span className="text-white text-[20px] font-bold tabular-nums">{loading ? "..." : fmt(data?.cashback ?? 0)}</span>
-          <span className="text-white/70 text-[11px]">{t.cashback}</span>
+          <span className="text-white/70 text-[14px]">{t.cashback}</span>
         </div>
         <div className="p-4 flex flex-col items-center justify-center gap-0.5">
           <span className="text-white/70 text-[14px]">{t.referral} <span className="text-white font-bold">{loading ? "..." : fmt(data?.downline ?? 0)}</span></span>

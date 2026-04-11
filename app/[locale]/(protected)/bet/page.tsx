@@ -266,11 +266,11 @@ function CategoryCard({
       </div>
 
       <div className="mt-3 h-[24px] flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 transition-colors rounded-full px-3 py-1 text-[11px] font-semibold text-white">
+        <span className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 transition-colors rounded-full px-3 py-1 text-[14px] font-semibold text-white">
           {playLabel}
         </span>
         {openCount > 0 && (
-          <span className="flex items-center gap-1 text-[10px] font-medium bg-white/20 rounded-full px-2 py-0.5 text-white">
+          <span className="flex items-center gap-1 text-[14px] font-medium bg-white/20 rounded-full px-2 py-0.5 text-white">
             <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse inline-block" />
             {openCount} {liveLabel}
           </span>
@@ -454,7 +454,7 @@ export default async function BetRoute({ params, searchParams }: Props) {
                 <h2 className="text-[15px] font-bold text-white tracking-tight">
                   {group.emoji} {(t as Record<string, string>)[group.game_type] ?? group.label}
                 </h2>
-                <Link href={`/${locale}/games/${group.game_type.toLowerCase()}`} className="text-[12px] font-semibold text-white/80 hover:text-white">
+                <Link href={`/${locale}/games/${group.game_type.toLowerCase()}`} className="text-[14px] font-semibold text-white/80 hover:text-white">
                   {t.viewAll} ({group.providers.length}) →
                 </Link>
               </div>

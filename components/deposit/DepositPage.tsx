@@ -102,7 +102,7 @@ function StepBar({ phase }: { phase: Phase }) {
                 ) : n}
               </div>
               <span className={[
-                "text-[10px] font-medium whitespace-nowrap",
+                "text-[14px] font-medium whitespace-nowrap",
                 active ? "text-ap-blue" : done ? "text-ap-green" : "text-ap-tertiary",
               ].join(" ")}>
                 {label}
@@ -158,12 +158,12 @@ function BankCard({
             {account.acc_no}
           </p>
           {minAmt > 0 && (
-            <span className="text-[10px] text-ap-tertiary">ขั้นต่ำ ฿{minAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-[14px] text-ap-tertiary">ขั้นต่ำ ฿{minAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           )}
         </div>
       </div>
       {account.remark && (
-        <p className="text-[11px] text-amber-600 mt-2 bg-amber-50 rounded-lg px-2 py-1">{account.remark}</p>
+        <p className="text-[14px] text-amber-600 mt-2 bg-amber-50 rounded-lg px-2 py-1">{account.remark}</p>
       )}
     </button>
   );
@@ -175,7 +175,7 @@ function Notes() {
     <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2.5">
         <span className="text-[18px]">⚠️</span>
-        <p className="text-[12px] font-bold text-amber-700 uppercase tracking-wide">หมายเหตุสำคัญ</p>
+        <p className="text-[14px] font-bold text-amber-700 uppercase tracking-wide">หมายเหตุสำคัญ</p>
       </div>
       <div className="space-y-1.5">
         {[
@@ -184,8 +184,8 @@ function Notes() {
           { bold: false, text: "หากพบปัญหาติดต่อฝ่ายบริการลูกค้า" },
         ].map((n, i) => (
           <div key={i} className="flex items-start gap-2">
-            <span className="text-amber-500 text-[12px] mt-0.5 flex-shrink-0">•</span>
-            <p className={`text-[12px] text-amber-700 leading-relaxed ${n.bold ? "font-semibold" : ""}`}>
+            <span className="text-amber-500 text-[14px] mt-0.5 flex-shrink-0">•</span>
+            <p className={`text-[14px] text-amber-700 leading-relaxed ${n.bold ? "font-semibold" : ""}`}>
               {n.text}
             </p>
           </div>
@@ -306,7 +306,7 @@ export default function DepositPage({ displayName, bankName, bankAccount, balanc
 
       {/* Balance card */}
       <div className="bg-white rounded-2xl border border-ap-border shadow-card px-5 py-4 mb-3">
-        <p className="text-[11px] text-ap-tertiary uppercase tracking-wide font-medium mb-0.5">ยอดคงเหลือ</p>
+        <p className="text-[14px] text-ap-tertiary uppercase tracking-wide font-medium mb-0.5">ยอดคงเหลือ</p>
         <p className="text-[30px] font-bold text-ap-primary tabular-nums leading-tight">
           ฿{balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </p>
@@ -314,12 +314,12 @@ export default function DepositPage({ displayName, bankName, bankAccount, balanc
 
       {/* User bank info card */}
       <div className="bg-white rounded-2xl border border-ap-border shadow-card px-5 py-4 mb-5">
-        <p className="text-[11px] text-ap-tertiary uppercase tracking-wide font-medium mb-1.5">บัญชีธนาคารของฉัน</p>
+        <p className="text-[14px] text-ap-tertiary uppercase tracking-wide font-medium mb-1.5">บัญชีธนาคารของฉัน</p>
         {bankAccount ? (
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[14px] font-semibold text-ap-primary">{displayName}</p>
-              {bankName && <p className="text-[12px] text-ap-secondary mt-0.5">{bankName}</p>}
+              {bankName && <p className="text-[14px] text-ap-secondary mt-0.5">{bankName}</p>}
             </div>
             <p className="text-[14px] font-mono font-semibold text-ap-primary tracking-wider">
               {maskAccount(bankAccount)}
@@ -368,7 +368,7 @@ export default function DepositPage({ displayName, bankName, bankAccount, balanc
                   </div>
                   <div className="flex-1">
                     <p className="text-[15px] font-semibold text-ap-primary">{meta.title}</p>
-                    <p className="text-[12px] text-ap-tertiary mt-0.5">{meta.desc}</p>
+                    <p className="text-[14px] text-ap-tertiary mt-0.5">{meta.desc}</p>
                   </div>
                   <svg className="w-5 h-5 text-ap-tertiary flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 18l6-6-6-6" />
@@ -407,7 +407,7 @@ export default function DepositPage({ displayName, bankName, bankAccount, balanc
             {/* Bank account list */}
             {!bankLoading && bankAccounts.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[11px] font-bold text-ap-secondary uppercase tracking-wide">
+                <p className="text-[14px] font-bold text-ap-secondary uppercase tracking-wide">
                   {method === "tw" ? "โอนมาที่หมายเลขนี้" : "โอนเงินมาที่บัญชีนี้"}
                 </p>
                 {bankAccounts.map((acc) => (

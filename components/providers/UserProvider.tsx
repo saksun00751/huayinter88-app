@@ -201,12 +201,15 @@ export default function UserProvider({
         const config = normalizeRealtimeConfig(configJson);
         const context = normalizeRealtimeContext(contextJson);
         const key = typeof config?.key === "string" ? config.key : "";
-        const privateChannelName = context.privateChannel;
+        const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "huayinter88";
+        const memberCode = context.memberCode;
         const sharedMemberChannel = typeof config?.shared_member_channel === "string"
           ? config.shared_member_channel
           : typeof config?.sharedMemberChannel === "string"
           ? config.sharedMemberChannel
-          : "shared_member_channel";
+          : `${appName}_members`;
+        const privateChannelName = context.privateChannel
+          ?? (memberCode ? `${appName}_members.${memberCode}` : null);
 
         if (!config || !key || !privateChannelName) {
           return;
@@ -260,10 +263,7 @@ export default function UserProvider({
         sharedChannelRef.current = sharedMemberChannel;
         privateChannelRef.current = privateChannelName;
 
-        const pusherConnection = (echo.connector as any)?.pusher?.connection;
-        void pusherConnection;
-
-        const handleBalanceUpdate = (payload: unknown) => {
+        const reconcileWallet = (payload: unknown) => {
           const patch = extractWalletPatch(payload);
           if (patch.balance !== undefined || patch.diamond !== undefined) {
             setWallet(patch);
@@ -271,23 +271,75 @@ export default function UserProvider({
           queueReconcile();
         };
 
+        const formatAmount = (value: unknown) =>
+          toNumber(value, 0).toLocaleString("th-TH");
+
+        const handlePublicActivity = (payload: any) => {
+          const eventName = typeof payload?.event === "string" ? payload.event : "";
+          const message = typeof payload?.message === "string" ? payload.message : "";
+          switch (eventName) {
+            case "lotto.draw_closed":
+              toast.info(message || "งวดหวยปิดรับแทงแล้ว");
+              break;
+            case "lotto.draw_resulted":
+              toast.success(message || "ประกาศผลหวยแล้ว");
+              break;
+            case "lotto.draw_status_changed":
+              toast.info(message || "สถานะงวดหวยมีการเปลี่ยนแปลง");
+              break;
+          }
+        };
+
+        const handleMemberActivity = (payload: any) => {
+          const method = typeof payload?.method === "string" ? payload.method : "";
+          const eventName = typeof payload?.event === "string" ? payload.event : "";
+          const message = typeof payload?.message === "string" ? payload.message : "";
+          const amount = formatAmount(payload?.data?.amount);
+
+          switch (eventName) {
+            case "wallet.deposit_approved":
+              toast.success(message || `เติมเงินสำเร็จ +${amount} บาท`);
+              break;
+            case "wallet.withdraw_approved":
+              toast.success(message || `ถอนเงินสำเร็จ -${amount} บาท`);
+              break;
+            case "wallet.withdraw_rejected":
+              toast.error(message || "การถอนเงินถูกปฏิเสธ");
+              break;
+            case "wallet.rollback_applied":
+              toast.info(message || "มีการปรับปรุงยอดเงิน");
+              break;
+            case "wallet.admin_adjusted":
+              toast.info(message || "ยอดเงินถูกปรับโดยแอดมิน");
+              break;
+            case "lotto.ticket_won":
+              toast.success(message || `ถูกรางวัลหวย +${amount} บาท`);
+              break;
+            case "lotto.ticket_refunded":
+              toast.info(message || `คืนเงินค่าหวย +${amount} บาท`);
+              break;
+          }
+
+          if (method === "deposit" || method === "withdraw" || method === "rollback" || method === "adjust") {
+            reconcileWallet(payload);
+          }
+        };
+
         const sharedChannel = echo.private(sharedMemberChannel);
         sharedChannel
-          .listen(".public.activity.updated", (event: unknown) => {
-            handleBalanceUpdate(event);
+          .listen(".public.activity.updated", handlePublicActivity)
+          .error((err: unknown) => {
+            console.error("[echo:shared] subscription error", err);
           });
 
         const privateChannel = echo.private(privateChannelName);
         privateChannel
-          .listen(".member.activity.updated", (event: any) => {
-            if (event?.method === "deposit") {
-              const amount = toNumber(event?.data?.amount, 0);
-              toast.success(`เติมเงินสำเร็จ +${amount.toLocaleString("th-TH")} บาท`);
-            }
-            handleBalanceUpdate(event);
+          .listen(".member.activity.updated", handleMemberActivity)
+          .listen(".member.balance.updated", (payload: unknown) => {
+            reconcileWallet(payload);
           })
-          .listen(".member.balance.updated", (event: unknown) => {
-            handleBalanceUpdate(event);
+          .error((err: unknown) => {
+            console.error("[echo:private] subscription error", err);
           });
 
         await sendHeartbeat();

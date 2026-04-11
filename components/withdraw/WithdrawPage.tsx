@@ -70,14 +70,14 @@ function Notes({ withdrawMin, withdrawMax, withdrawMaxDay, withdrawSumToday, wit
     <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2.5">
         <span className="text-[18px]">⚠️</span>
-        <p className="text-[12px] font-bold text-amber-700 uppercase tracking-wide">{tw.noteTitle}</p>
+        <p className="text-[14px] font-bold text-amber-700 uppercase tracking-wide">{tw.noteTitle}</p>
       </div>
       <div className="space-y-2">
         {notes.map((n, i) => (
           <div key={i} className="flex items-start gap-2">
-            <span className="text-amber-500 text-[12px] mt-0.5 flex-shrink-0">•</span>
+            <span className="text-amber-500 text-[14px] mt-0.5 flex-shrink-0">•</span>
             <p className={[
-              "text-[12px] leading-relaxed",
+              "text-[14px] leading-relaxed",
               n.bold      ? "font-semibold text-amber-800" : "text-amber-700",
               n.highlight ? "font-medium"                  : "",
             ].join(" ")}>
@@ -194,7 +194,7 @@ export default function WithdrawPage({
 
       {/* Balance card */}
       <div className="bg-white rounded-2xl border border-ap-border shadow-card px-5 py-4 mb-3">
-        <p className="text-[11px] text-ap-tertiary uppercase tracking-wide font-medium mb-0.5">{tw.balance}</p>
+        <p className="text-[14px] text-ap-tertiary uppercase tracking-wide font-medium mb-0.5">{tw.balance}</p>
         <p className="text-[30px] font-bold text-ap-primary tabular-nums leading-tight">
           ฿{fmt(balance)}
         </p>
@@ -202,12 +202,12 @@ export default function WithdrawPage({
 
       {/* Bank info card */}
       <div className="bg-white rounded-2xl border border-ap-border shadow-card px-5 py-4 mb-5">
-        <p className="text-[11px] text-ap-tertiary uppercase tracking-wide font-medium mb-1.5">{tw.myAccount}</p>
+        <p className="text-[14px] text-ap-tertiary uppercase tracking-wide font-medium mb-1.5">{tw.myAccount}</p>
         {bankAccount ? (
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[14px] font-semibold text-ap-primary">{displayName}</p>
-              <p className="text-[12px] text-ap-secondary mt-0.5">{bankName}</p>
+              <p className="text-[14px] text-ap-secondary mt-0.5">{bankName}</p>
             </div>
             <p className="text-[14px] font-mono font-semibold text-ap-primary tracking-wider">
               {maskAccount(bankAccount)}
@@ -216,7 +216,7 @@ export default function WithdrawPage({
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-[13px] text-ap-tertiary">{tw.noBank}</p>
-            <a href={`/${lang}/profile`} className="text-[12px] text-ap-blue font-semibold">{tw.setup}</a>
+            <a href={`/${lang}/profile`} className="text-[14px] text-ap-blue font-semibold">{tw.setup}</a>
           </div>
         )}
       </div>
@@ -232,7 +232,7 @@ export default function WithdrawPage({
               </svg>
             </div>
             <h3 className="text-[18px] font-bold text-ap-primary text-center mb-1">{tw.confirmTitle}</h3>
-            <p className="text-[12px] text-ap-tertiary text-center mb-5">{tw.confirmDesc}</p>
+            <p className="text-[14px] text-ap-tertiary text-center mb-5">{tw.confirmDesc}</p>
 
             <div className="bg-ap-bg rounded-2xl p-4 space-y-3 mb-5">
               {[
@@ -242,7 +242,7 @@ export default function WithdrawPage({
                 { label: tw.rowName,   value: displayName },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between">
-                  <span className="text-[12px] text-ap-secondary">{row.label}</span>
+                  <span className="text-[14px] text-ap-secondary">{row.label}</span>
                   <span className={`text-[13px] font-bold ${row.highlight ? "text-ap-red" : "text-ap-primary"}`}>
                     {row.value}
                   </span>
@@ -323,14 +323,14 @@ export default function WithdrawPage({
             />
           </div>
           {amountError && (
-            <p className="text-[12px] text-ap-red mt-1.5 pl-1">{amountError}</p>
+            <p className="text-[14px] text-ap-red mt-1.5 pl-1">{amountError}</p>
           )}
         </div>
 
         {/* Summary row */}
         {isValid && (
           <div className="bg-ap-bg rounded-xl px-4 py-3 flex items-center justify-between animate-fade-in">
-            <span className="text-[12px] text-ap-secondary">{tw.transferTo}</span>
+            <span className="text-[14px] text-ap-secondary">{tw.transferTo}</span>
             <span className="text-[13px] font-semibold text-ap-primary">
               {displayName} · {bankAccount ? maskAccount(bankAccount) : "-"}
             </span>

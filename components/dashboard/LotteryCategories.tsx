@@ -11,12 +11,12 @@ import PackageModalButton from "@/components/bet/PackageModalButton";
 function StatusBadge({ status, label }: { status: SubItem["drawStatus"]; label?: string }) {
   const text = label?.trim() || "—";
   if (status === "open")
-    return <span className="inline-block rounded-full px-3 py-0.5 text-[11px] font-bold bg-emerald-500 text-white">{text}</span>;
+    return <span className="inline-block rounded-full px-3 py-0.5 text-[14px] font-bold bg-emerald-500 text-white">{text}</span>;
   if (status === "closed")
-    return <span className="inline-block rounded-full px-3 py-0.5 text-[11px] font-bold bg-gray-300 text-gray-600">{text}</span>;
+    return <span className="inline-block rounded-full px-3 py-0.5 text-[14px] font-bold bg-gray-300 text-gray-600">{text}</span>;
   if (status === "resulted")
-    return <span className="inline-block rounded-full px-3 py-0.5 text-[11px] font-bold bg-red-100 text-red-600">{text}</span>;
-  return <span className="inline-block rounded-full px-3 py-0.5 text-[11px] font-bold bg-orange-400 text-white">{text}</span>;
+    return <span className="inline-block rounded-full px-3 py-0.5 text-[14px] font-bold bg-red-100 text-red-600">{text}</span>;
+  return <span className="inline-block rounded-full px-3 py-0.5 text-[14px] font-bold bg-orange-400 text-white">{text}</span>;
 }
 
 export default function LotteryCategories() {
@@ -69,16 +69,16 @@ export default function LotteryCategories() {
             <span className="text-[18px]">{cat.emoji}</span>
             <span className="text-white font-bold text-[14px] tracking-tight">{cat.label}</span>
          
-            <span className="ml-auto bg-white text-ap-blue text-[11px] font-bold rounded-full px-2.5 py-0.5">{cat.items.length} {t.itemsCount}</span>
+            <span className="ml-auto bg-white text-ap-blue text-[14px] font-bold rounded-full px-2.5 py-0.5">{cat.items.length} {t.itemsCount}</span>
           </div>
 
           {cat.description && (
             <div className="px-4 py-2 bg-blue-50 border-b border-ap-border">
-              <p className="text-[12px] text-ap-secondary leading-relaxed">{cat.description}</p>
+              <p className="text-[14px] text-ap-secondary leading-relaxed">{cat.description}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-[1fr_60px_60px_90px] sm:grid-cols-[1fr_100px_72px_72px_110px] px-3 py-2 bg-gray-50 border-b border-ap-border text-[11px] font-semibold text-ap-tertiary text-center">
+          <div className="grid grid-cols-[1fr_60px_60px_90px] sm:grid-cols-[1fr_100px_72px_72px_110px] px-3 py-2 bg-gray-50 border-b border-ap-border text-[14px] font-semibold text-ap-tertiary text-center">
             <span className="text-left">{t.colLottery}</span>
             <span className="hidden sm:block">{t.colDraw}</span>
             <span>{t.colTop3}</span>
@@ -97,24 +97,24 @@ export default function LotteryCategories() {
                     ? <img src={item.logo} alt={item.name} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
                     : <span className="text-[18px] flex-shrink-0">{item.flag}</span>}
                   <div className="min-w-0">
-                    <span className="block text-[12px] font-semibold text-ap-primary truncate">{item.name}</span>
-                    <span className="block sm:hidden text-[10px] text-ap-secondary truncate">
+                    <span className="block text-[14px] font-semibold text-ap-primary truncate">{item.name}</span>
+                    <span className="block sm:hidden text-[12px] text-ap-secondary truncate">
                       {t.colDraw} {item.drawDate ?? "—"}
                     </span>
                   </div>
                 </div>
-                <div className="hidden sm:block text-center text-[11px] text-ap-secondary tabular-nums">
+                <div className="hidden sm:block text-center text-[12px] text-ap-secondary tabular-nums">
                   {item.drawDate ?? "—"}
                 </div>
                 <div className="flex justify-center">
                   {item.result?.top3
                     ? <span className="bg-teal-500 text-white text-[13px] font-bold tabular-nums rounded-md px-2 py-0.5">{item.result.top3}</span>
-                    : <span className="text-ap-tertiary text-[12px]">—</span>}
+                    : <span className="text-ap-tertiary text-[14px]">—</span>}
                 </div>
                 <div className="flex justify-center">
                   {item.result?.bot2
                     ? <span className="bg-teal-500 text-white text-[13px] font-bold tabular-nums rounded-md px-2 py-0.5">{item.result.bot2}</span>
-                    : <span className="text-ap-tertiary text-[12px]">—</span>}
+                    : <span className="text-ap-tertiary text-[14px]">—</span>}
                 </div>
                 <div className="flex justify-center px-1">
                   {item.drawStatus === "open" && cat.groupId != null && item.drawId != null ? (
