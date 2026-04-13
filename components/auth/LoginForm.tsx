@@ -201,7 +201,7 @@ export default function LoginForm() {
             </button>
             <span className="text-[13px] text-ap-secondary select-none">{t.remember}</span>
           </label>
-          <button type="button" className="text-[13px] text-ap-blue font-medium hover:opacity-70">{t.forgot}</button>
+          <a href={`/${lang}/contact-public`} className="text-[13px] text-ap-blue font-medium hover:opacity-70">{t.forgot}</a>
         </div>
         {pwState.error && <ErrorBanner msg={pwState.error} />}
         <SubmitButton>{t.submitLogin}</SubmitButton>
