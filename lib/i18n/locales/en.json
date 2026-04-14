@@ -39,6 +39,10 @@
   "navbar": {
     "home": "Home",
     "play": "Play",
+    "slot": "Slot",
+    "casino": "Casino",
+    "sport": "Sport",
+    "lotto": "Lotto",
     "withdraw": "Withdraw",
     "results": "Results",
     "contact": "Contact",

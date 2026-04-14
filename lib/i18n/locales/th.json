@@ -39,6 +39,10 @@
   "navbar": {
     "home": "หน้าแรก",
     "play": "เล่น",
+    "slot": "สลอต",
+    "casino": "คาสิโน",
+    "sport": "กีฬา",
+    "lotto": "หวย",
     "withdraw": "ถอนเงิน",
     "results": "ลิ๊งค์ดูผล",
     "contact": "ติดต่อ",
