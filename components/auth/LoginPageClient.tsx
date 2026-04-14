@@ -20,9 +20,9 @@ function LoginContent({ logoUrl }: { logoUrl: string }) {
         <h1 className="text-[30px] font-bold text-ap-primary tracking-tight leading-none">
           {t.heading}
         </h1>
-        <p className="text-[15px] text-ap-secondary mt-2">
+        {/* <p className="text-[15px] text-ap-secondary mt-2">
           {t.subtitle}
-        </p>
+        </p> */}
         <div className="mt-4">
           <LanguageSwitcher />
         </div>
