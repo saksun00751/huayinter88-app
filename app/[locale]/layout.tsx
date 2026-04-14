@@ -56,11 +56,13 @@ export default async function LocaleLayout({
       <Toaster
         position="top-center"
         richColors
+        expand
+        gap={12}
         toastOptions={{
           style: {
             fontSize: "16px",
             borderRadius: "10px",
-            fontWeight: "500",  
+            fontWeight: "500",
             padding: "16px 20px",
             minWidth: "340px",
           },

@@ -266,9 +266,9 @@ export default function Navbar({ logoUrl, balance, diamond, userName, userPhone 
                   "flex flex-col items-center justify-center gap-0.5 min-w-0 transition-all active:scale-95 py-1.5",
                   active ? "text-ap-blue" : "text-ap-tertiary",
                 ].join(" ")}>
-                <span className="leading-none text-[22px]">{l.icon}</span>
+                <span className="leading-none text-[26px]">{l.icon}</span>
                 <span className={[
-                  "text-[10px] truncate w-full text-center px-0.5 leading-tight",
+                  "text-[12px] truncate w-full text-center px-0.5 leading-tight",
                   active ? "font-bold" : "font-medium",
                 ].join(" ")}>
                   {l.label}
